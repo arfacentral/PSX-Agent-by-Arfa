@@ -1,6 +1,5 @@
 import html
 
-import requests
 import pandas as pd
 import streamlit as st
 
@@ -13,21 +12,26 @@ st.markdown(
     """
     <style>
     :root {
-        --ink: #17212b;
-        --muted: #667085;
-        --panel: #ffffff;
-        --line: #d9dee8;
-        --green: #0f8f62;
-        --green-soft: #e8f6f0;
-        --amber: #b7791f;
-        --amber-soft: #fff7e6;
-        --red: #c2410c;
-        --red-soft: #fff0e8;
-        --blue: #2563eb;
-        --blue-soft: #eef4ff;
+        --ink: #f7fbff;
+        --muted: #9fb3c8;
+        --panel: #101827;
+        --panel-2: #0b1220;
+        --line: #24415f;
+        --green: #22f2a6;
+        --green-soft: rgba(34, 242, 166, .16);
+        --amber: #ffd166;
+        --amber-soft: rgba(255, 209, 102, .17);
+        --red: #ff4d6d;
+        --red-soft: rgba(255, 77, 109, .17);
+        --blue: #40c9ff;
+        --blue-soft: rgba(64, 201, 255, .16);
+        --violet: #b56cff;
     }
     .stApp {
-        background: linear-gradient(180deg, #f7f9fc 0%, #eef3f8 45%, #f8fafc 100%);
+        background:
+            radial-gradient(circle at 15% 8%, rgba(64, 201, 255, .20), transparent 26%),
+            radial-gradient(circle at 85% 0%, rgba(34, 242, 166, .17), transparent 28%),
+            linear-gradient(180deg, #050814 0%, #08111f 45%, #050814 100%);
         color: var(--ink);
     }
     .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label,
@@ -38,33 +42,50 @@ st.markdown(
     [data-testid="stMarkdownContainer"] p,
     [data-testid="stCaptionContainer"],
     [data-testid="stText"] {
-        color: var(--ink);
+        color: var(--ink) !important;
     }
-    [data-testid="stSidebar"] {
-        background: #111827;
+    [data-testid="stSidebar"],
+    [data-testid="collapsedControl"] {
+        display: none;
     }
-    [data-testid="stSidebar"] * {
-        color: #f9fafb !important;
+    [data-testid="stHeader"] {
+        background: rgba(5, 8, 20, .76);
+        backdrop-filter: blur(12px);
     }
     .hero {
-        background: linear-gradient(135deg, #102033 0%, #1d4f66 52%, #366b47 100%);
-        border: 1px solid rgba(255,255,255,.16);
+        position: relative;
+        overflow: hidden;
+        background:
+            linear-gradient(135deg, rgba(64, 201, 255, .18) 0%, rgba(181, 108, 255, .15) 46%, rgba(34, 242, 166, .20) 100%),
+            #0a1322;
+        border: 1px solid rgba(64, 201, 255, .42);
         border-radius: 14px;
         padding: 26px 28px;
         margin-bottom: 18px;
         color: white;
-        box-shadow: 0 18px 50px rgba(16, 32, 51, .20);
+        box-shadow: 0 0 38px rgba(64, 201, 255, .16), inset 0 0 38px rgba(34, 242, 166, .08);
+    }
+    .hero:after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.08) 50%, transparent 100%);
+        opacity: .28;
+        pointer-events: none;
     }
     .hero h1 {
+        position: relative;
         margin: 0 0 6px 0;
         font-size: 34px;
         line-height: 1.12;
         letter-spacing: 0;
         color: #ffffff !important;
+        text-shadow: 0 0 18px rgba(64, 201, 255, .55);
     }
     .hero p {
+        position: relative;
         margin: 0;
-        color: rgba(255,255,255,.86) !important;
+        color: rgba(247,251,255,.88) !important;
         font-size: 16px;
     }
     .metric-card {
@@ -74,12 +95,12 @@ st.markdown(
         border-radius: 12px;
         padding: 16px 18px;
         min-height: 104px;
-        box-shadow: 0 10px 28px rgba(17, 24, 39, .06);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, .25), inset 0 0 24px rgba(64, 201, 255, .04);
     }
-    .metric-card.green { border-left-color: var(--green); background: linear-gradient(180deg, #ffffff 0%, #f3fbf7 100%); }
-    .metric-card.amber { border-left-color: var(--amber); background: linear-gradient(180deg, #ffffff 0%, #fffaf0 100%); }
-    .metric-card.red { border-left-color: var(--red); background: linear-gradient(180deg, #ffffff 0%, #fff5f0 100%); }
-    .metric-card.blue { border-left-color: var(--blue); background: linear-gradient(180deg, #ffffff 0%, #f2f7ff 100%); }
+    .metric-card.green { border-left-color: var(--green); background: linear-gradient(180deg, rgba(34,242,166,.10) 0%, var(--panel) 100%); }
+    .metric-card.amber { border-left-color: var(--amber); background: linear-gradient(180deg, rgba(255,209,102,.12) 0%, var(--panel) 100%); }
+    .metric-card.red { border-left-color: var(--red); background: linear-gradient(180deg, rgba(255,77,109,.12) 0%, var(--panel) 100%); }
+    .metric-card.blue { border-left-color: var(--blue); background: linear-gradient(180deg, rgba(64,201,255,.12) 0%, var(--panel) 100%); }
     .metric-label {
         color: var(--muted);
         font-size: 13px;
@@ -97,13 +118,13 @@ st.markdown(
         margin-top: 8px;
     }
     .idea-card {
-        background: var(--panel);
+        background: linear-gradient(180deg, rgba(16,24,39,.96), rgba(11,18,32,.96));
         border: 1px solid var(--line);
         border-left: 7px solid var(--blue);
         border-radius: 12px;
         padding: 18px;
         margin: 12px 0 14px 0;
-        box-shadow: 0 10px 26px rgba(17, 24, 39, .06);
+        box-shadow: 0 12px 32px rgba(0,0,0,.30);
     }
     .idea-card.buy { border-left-color: var(--green); }
     .idea-card.wait { border-left-color: var(--amber); }
@@ -129,9 +150,9 @@ st.markdown(
         border: 1px solid transparent;
         white-space: nowrap;
     }
-    .badge.buy { background: var(--green-soft); color: var(--green); border-color: #b8e3d2; }
-    .badge.wait { background: var(--amber-soft); color: var(--amber); border-color: #f4d9a5; }
-    .badge.avoid { background: var(--red-soft); color: var(--red); border-color: #ffc9b7; }
+    .badge.buy { background: var(--green-soft); color: var(--green); border-color: rgba(34,242,166,.48); }
+    .badge.wait { background: var(--amber-soft); color: var(--amber); border-color: rgba(255,209,102,.48); }
+    .badge.avoid { background: var(--red-soft); color: var(--red); border-color: rgba(255,77,109,.48); }
     .price-grid {
         display: grid;
         grid-template-columns: repeat(5, minmax(104px, 1fr));
@@ -139,8 +160,8 @@ st.markdown(
         margin: 12px 0;
     }
     .price-cell {
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
+        background: rgba(5, 8, 20, .72);
+        border: 1px solid rgba(64, 201, 255, .22);
         border-radius: 10px;
         padding: 10px;
     }
@@ -156,7 +177,7 @@ st.markdown(
     }
     .reason-list {
         margin: 8px 0 0 18px;
-        color: #344054;
+        color: #d8e5f2;
     }
     .small-note {
         color: var(--muted);
@@ -164,34 +185,46 @@ st.markdown(
         margin-top: 8px;
     }
     [data-testid="stAlert"] {
-        background: #e9f4ff !important;
-        border: 1px solid #b7d8f7 !important;
-        color: #1f344a !important;
+        background: rgba(64, 201, 255, .13) !important;
+        border: 1px solid rgba(64, 201, 255, .32) !important;
+        color: var(--ink) !important;
         border-radius: 10px !important;
     }
     [data-testid="stAlert"] * {
-        color: #1f344a !important;
+        color: var(--ink) !important;
     }
     .stTabs [data-baseweb="tab-list"] {
         gap: 6px;
-        border-bottom: 1px solid #d9dee8;
+        border-bottom: 1px solid var(--line);
     }
     .stTabs [data-baseweb="tab"] {
-        color: #344054 !important;
+        color: var(--muted) !important;
         background: transparent !important;
         font-weight: 650;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        color: #0f8f62 !important;
-        border-bottom-color: #0f8f62 !important;
+        color: var(--green) !important;
+        border-bottom-color: var(--green) !important;
     }
     [data-testid="stSelectbox"] label,
     [data-testid="stSelectbox"] div {
-        color: #17212b !important;
+        color: var(--ink) !important;
+    }
+    [data-baseweb="select"] > div {
+        background: #0f1726 !important;
+        border-color: rgba(64, 201, 255, .34) !important;
     }
     [data-testid="stDataFrame"] {
-        background: #ffffff;
+        background: var(--panel-2);
+        border: 1px solid rgba(64, 201, 255, .20);
         border-radius: 10px;
+    }
+    .stButton button {
+        background: linear-gradient(135deg, rgba(64,201,255,.20), rgba(34,242,166,.18)) !important;
+        color: var(--ink) !important;
+        border: 1px solid rgba(64,201,255,.55) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 0 22px rgba(64,201,255,.14);
     }
     @media (max-width: 760px) {
         .hero h1 { font-size: 28px; }
@@ -213,19 +246,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-source = st.sidebar.radio("Data source", ["Local engine", "FastAPI backend"])
-api_url = st.sidebar.text_input("Backend URL", "http://localhost:8000/report")
-refresh = st.sidebar.button("Refresh now")
+_, toolbar_right = st.columns([5, 1])
+with toolbar_right:
+    refresh = st.button("Refresh data", use_container_width=True)
 
 if refresh:
     st.cache_data.clear()
-
-
-@st.cache_data(ttl=15)
-def load_backend_report(url: str) -> dict:
-    response = requests.get(url, timeout=300)
-    response.raise_for_status()
-    return response.json()
 
 
 @st.cache_data(ttl=15)
@@ -265,10 +291,10 @@ def action_class(action: str) -> str:
 def action_color(action: str) -> str:
     css_class = action_class(action)
     if css_class == "buy":
-        return "#0f8f62"
+        return "#22f2a6"
     if css_class == "avoid":
-        return "#c2410c"
-    return "#b7791f"
+        return "#ff4d6d"
+    return "#ffd166"
 
 
 def fmt_number(value, decimals: int = 2) -> str:
@@ -303,11 +329,11 @@ def metric_card(label: str, value: str, note: str, tone: str = "blue") -> None:
 
 def color_action(value: str) -> str:
     if value == "BUY WATCH":
-        return "background-color: #e8f6f0; color: #0f8f62; font-weight: 700;"
+        return "background-color: rgba(34, 242, 166, .18); color: #063d2a; font-weight: 800;"
     if value == "WAIT":
-        return "background-color: #fff7e6; color: #b7791f; font-weight: 700;"
+        return "background-color: rgba(255, 209, 102, .24); color: #5c3d00; font-weight: 800;"
     if value == "AVOID":
-        return "background-color: #fff0e8; color: #c2410c; font-weight: 700;"
+        return "background-color: rgba(255, 77, 109, .22); color: #661326; font-weight: 800;"
     return ""
 
 
@@ -315,10 +341,10 @@ def color_change(value) -> str:
     if pd.isna(value):
         return ""
     if value > 0:
-        return "background-color: #e8f6f0; color: #0f8f62; font-weight: 700;"
+        return "background-color: rgba(34, 242, 166, .18); color: #063d2a; font-weight: 800;"
     if value < 0:
-        return "background-color: #fff0e8; color: #c2410c; font-weight: 700;"
-    return "background-color: #fff7e6; color: #b7791f; font-weight: 700;"
+        return "background-color: rgba(255, 77, 109, .22); color: #661326; font-weight: 800;"
+    return "background-color: rgba(255, 209, 102, .24); color: #5c3d00; font-weight: 800;"
 
 
 def color_quick_signal(value: str) -> str:
@@ -354,10 +380,7 @@ def render_idea_card(idea: dict) -> None:
         unsafe_allow_html=True,
     )
 
-if source == "FastAPI backend":
-    report = load_backend_report(api_url)
-else:
-    report = load_local_report()
+report = load_local_report()
 
 recommendations = report.get("recommendations", [])
 quotes = report.get("quotes", [])
@@ -399,7 +422,7 @@ tab_recommendations, tab_all_stocks = st.tabs(["Recommendations", "All stocks"])
 
 with tab_recommendations:
     if not recommendations:
-        st.warning("No recommendations are available yet. Check that the data source is reachable and refresh.")
+        st.warning("No recommendations are available yet. Check that PSX Terminal is reachable and refresh.")
     else:
         rec_frame = pd.DataFrame(recommendations)
         action_filter = st.selectbox("Action", ["ALL", "BUY WATCH", "WAIT", "AVOID"], index=0)
