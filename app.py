@@ -60,10 +60,11 @@ st.markdown(
         font-size: 34px;
         line-height: 1.12;
         letter-spacing: 0;
+        color: #ffffff !important;
     }
     .hero p {
         margin: 0;
-        color: rgba(255,255,255,.82);
+        color: rgba(255,255,255,.86) !important;
         font-size: 16px;
     }
     .metric-card {
@@ -184,23 +185,9 @@ st.markdown(
         color: #0f8f62 !important;
         border-bottom-color: #0f8f62 !important;
     }
-    [data-testid="stSegmentedControl"] {
-        background: #ffffff !important;
-        border-radius: 10px;
-    }
-    [data-testid="stSegmentedControl"] label {
-        color: #344054 !important;
-        background: #ffffff !important;
-        border-color: #d9dee8 !important;
-    }
-    [data-testid="stSegmentedControl"] label[data-baseweb="radio"] {
-        color: #344054 !important;
-    }
-    [data-testid="stSegmentedControl"] label[aria-checked="true"],
-    [data-testid="stSegmentedControl"] label:has(input:checked) {
-        color: #ffffff !important;
-        background: #0f8f62 !important;
-        border-color: #0f8f62 !important;
+    [data-testid="stSelectbox"] label,
+    [data-testid="stSelectbox"] div {
+        color: #17212b !important;
     }
     [data-testid="stDataFrame"] {
         background: #ffffff;
@@ -415,11 +402,7 @@ with tab_recommendations:
         st.warning("No recommendations are available yet. Check that the data source is reachable and refresh.")
     else:
         rec_frame = pd.DataFrame(recommendations)
-        action_filter = st.segmented_control(
-            "Action",
-            ["ALL", "BUY WATCH", "WAIT", "AVOID"],
-            default="ALL",
-        )
+        action_filter = st.selectbox("Action", ["ALL", "BUY WATCH", "WAIT", "AVOID"], index=0)
         if action_filter != "ALL":
             rec_frame = rec_frame[rec_frame["action"] == action_filter]
 
@@ -439,7 +422,7 @@ with tab_recommendations:
             ]
         ]
         st.dataframe(
-            rec_display.style.applymap(color_action, subset=["action"]),
+            rec_display.style.map(color_action, subset=["action"]),
             use_container_width=True,
             hide_index=True,
         )
@@ -488,9 +471,9 @@ with tab_all_stocks:
         visible_columns = [column for column in display_columns if column in frame.columns]
         styled_frame = frame[visible_columns].style
         if "change_percent" in visible_columns:
-            styled_frame = styled_frame.applymap(color_change, subset=["change_percent"])
+            styled_frame = styled_frame.map(color_change, subset=["change_percent"])
         if "quick_signal" in visible_columns:
-            styled_frame = styled_frame.applymap(color_quick_signal, subset=["quick_signal"])
+            styled_frame = styled_frame.map(color_quick_signal, subset=["quick_signal"])
 
         st.dataframe(
             styled_frame,
