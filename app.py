@@ -329,11 +329,11 @@ def metric_card(label: str, value: str, note: str, tone: str = "blue") -> None:
 
 def color_action(value: str) -> str:
     if value == "BUY WATCH":
-        return "background-color: rgba(34, 242, 166, .18); color: #063d2a; font-weight: 800;"
+        return "background-color: #22f2a6; color: #031812; font-weight: 900;"
     if value == "WAIT":
-        return "background-color: rgba(255, 209, 102, .24); color: #5c3d00; font-weight: 800;"
+        return "background-color: #ffd166; color: #201300; font-weight: 900;"
     if value == "AVOID":
-        return "background-color: rgba(255, 77, 109, .22); color: #661326; font-weight: 800;"
+        return "background-color: #ff4d6d; color: #24020a; font-weight: 900;"
     return ""
 
 
@@ -341,10 +341,10 @@ def color_change(value) -> str:
     if pd.isna(value):
         return ""
     if value > 0:
-        return "background-color: rgba(34, 242, 166, .18); color: #063d2a; font-weight: 800;"
+        return "background-color: #22f2a6; color: #031812; font-weight: 900;"
     if value < 0:
-        return "background-color: rgba(255, 77, 109, .22); color: #661326; font-weight: 800;"
-    return "background-color: rgba(255, 209, 102, .24); color: #5c3d00; font-weight: 800;"
+        return "background-color: #ff4d6d; color: #24020a; font-weight: 900;"
+    return "background-color: #ffd166; color: #201300; font-weight: 900;"
 
 
 def color_quick_signal(value: str) -> str:
