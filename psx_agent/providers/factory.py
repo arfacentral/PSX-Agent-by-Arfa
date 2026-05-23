@@ -17,6 +17,7 @@ def get_provider() -> MarketDataProvider:
             kline_cache_ttl_seconds=settings.psxterminal_kline_cache_ttl_seconds,
             max_rest_quote_symbols=settings.psxterminal_max_rest_quote_symbols,
             rest_pause_seconds=settings.psxterminal_rest_pause_seconds,
+            quote_workers=settings.psxterminal_quote_workers,
             use_tick_endpoint=settings.psxterminal_use_tick_endpoint,
         )
     if settings.data_provider == "capitalstake":

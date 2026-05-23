@@ -1,5 +1,6 @@
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ class PsxTerminalProvider(MarketDataProvider):
         kline_cache_ttl_seconds: int = 60 * 60 * 8,
         max_rest_quote_symbols: int = 500,
         rest_pause_seconds: float = 0.65,
+        quote_workers: int = 6,
         use_tick_endpoint: bool = False,
     ) -> None:
         self.base_url = base_url.rstrip("/")
@@ -31,6 +33,7 @@ class PsxTerminalProvider(MarketDataProvider):
         self.kline_cache_ttl_seconds = kline_cache_ttl_seconds
         self.max_rest_quote_symbols = max_rest_quote_symbols
         self.rest_pause_seconds = rest_pause_seconds
+        self.quote_workers = max(1, quote_workers)
         self.use_tick_endpoint = use_tick_endpoint
         self.session = requests.Session()
         self.session.trust_env = False
@@ -62,14 +65,28 @@ class PsxTerminalProvider(MarketDataProvider):
 
         selected_symbols = symbols or self.list_symbols()
         selected_symbols = [symbol.upper().strip() for symbol in selected_symbols if symbol.strip()]
-        quotes: list[Quote] = []
-        for symbol in selected_symbols[: self.max_rest_quote_symbols]:
-            try:
-                quotes.append(self.get_quote(symbol))
-            except Exception:
-                quotes.append(Quote(symbol=symbol))
-            time.sleep(self.rest_pause_seconds)
-        return quotes
+        selected_symbols = selected_symbols[: self.max_rest_quote_symbols]
+        if self.quote_workers <= 1 or len(selected_symbols) <= 1:
+            quotes: list[Quote] = []
+            for symbol in selected_symbols:
+                try:
+                    quotes.append(self.get_quote(symbol))
+                except Exception:
+                    quotes.append(Quote(symbol=symbol))
+                time.sleep(self.rest_pause_seconds)
+            return quotes
+
+        quotes_by_symbol: dict[str, Quote] = {}
+        worker_count = min(self.quote_workers, len(selected_symbols))
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            futures = {executor.submit(self.get_quote, symbol): symbol for symbol in selected_symbols}
+            for future in as_completed(futures):
+                symbol = futures[future]
+                try:
+                    quotes_by_symbol[symbol] = future.result()
+                except Exception:
+                    quotes_by_symbol[symbol] = Quote(symbol=symbol)
+        return [quotes_by_symbol.get(symbol, Quote(symbol=symbol)) for symbol in selected_symbols]
 
     def get_quote(self, symbol: str) -> Quote:
         symbol = symbol.upper().strip()

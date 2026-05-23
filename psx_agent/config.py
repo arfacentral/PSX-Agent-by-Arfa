@@ -29,8 +29,9 @@ class Settings:
     psxterminal_market_type: str = "REG"
     psxterminal_quote_cache_ttl_seconds: int = 15
     psxterminal_kline_cache_ttl_seconds: int = 60 * 60 * 8
-    psxterminal_max_rest_quote_symbols: int = 20
+    psxterminal_max_rest_quote_symbols: int = 100
     psxterminal_rest_pause_seconds: float = 0.1
+    psxterminal_quote_workers: int = 6
     psxterminal_use_tick_endpoint: bool = False
     capitalstake_base_url: str = "https://csapis.com"
     capitalstake_api_token: str = ""
@@ -39,8 +40,13 @@ class Settings:
     psx_dps_base_url: str = "https://dps.psx.com.pk"
     psx_dps_cache_ttl_seconds: int = 60 * 60 * 8
     watchlist: str = (
-        "HBL,UBL,MCB,BAHL,MEBL,OGDC,PPL,POL,PSO,HUBC,"
-        "LUCK,ENGRO,FFC,EFERT,SYS,AIRLINK,TRG,MLCF,DGKC,UNITY"
+        "HBL,UBL,MCB,BAHL,MEBL,BOP,NBP,BAFL,FABL,AKBL,"
+        "OGDC,PPL,POL,MARI,PSO,APL,ATRL,PRL,NRL,HUBC,KAPCO,NCPL,NPL,KEL,"
+        "LUCK,MLCF,DGKC,FCCL,KOHC,CHCC,PIOC,POWER,ENGROH,FFC,EFERT,FATIMA,EPCL,FCEPL,LOTCHEM,"
+        "SYS,TRG,NETSOL,AVN,OCTOPUS,AIRLINK,PAEL,WAVES,PTC,TELE,HUMNL,"
+        "ILP,GATM,NML,NCL,IMAGE,SEARL,GLAXO,AGP,ABOT,HALEON,"
+        "INDU,HCAR,SAZEW,MTL,GHNI,UNITY,FFL,TOMCL,PREMA,SNGP,SSGC,PIBTL,PSX,"
+        "THALL,GAL,MUGHAL,ISL,ASTL,INIL,COLG,PKGS,RMPL,UPFL,PAKT"
     )
     report_timezone: str = "Asia/Karachi"
     max_recommendations: int = 20
@@ -72,6 +78,7 @@ def get_settings() -> Settings:
         psxterminal_rest_pause_seconds=_env_float(
             "PSXTERMINAL_REST_PAUSE_SECONDS", Settings.psxterminal_rest_pause_seconds
         ),
+        psxterminal_quote_workers=_env_int("PSXTERMINAL_QUOTE_WORKERS", Settings.psxterminal_quote_workers),
         psxterminal_use_tick_endpoint=_env_bool(
             "PSXTERMINAL_USE_TICK_ENDPOINT", Settings.psxterminal_use_tick_endpoint
         ),
