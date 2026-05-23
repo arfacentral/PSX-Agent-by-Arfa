@@ -101,6 +101,41 @@ st.markdown(
     .metric-card.amber { border-left-color: var(--amber); background: linear-gradient(180deg, rgba(255,209,102,.12) 0%, var(--panel) 100%); }
     .metric-card.red { border-left-color: var(--red); background: linear-gradient(180deg, rgba(255,77,109,.12) 0%, var(--panel) 100%); }
     .metric-card.blue { border-left-color: var(--blue); background: linear-gradient(180deg, rgba(64,201,255,.12) 0%, var(--panel) 100%); }
+    .status-card {
+        background: linear-gradient(135deg, rgba(64,201,255,.15), rgba(34,242,166,.10));
+        border: 1px solid rgba(64, 201, 255, .34);
+        border-left: 6px solid var(--green);
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin: 14px 0 8px 0;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, .22);
+    }
+    .status-card.amber {
+        border-left-color: var(--amber);
+        background: linear-gradient(135deg, rgba(255,209,102,.13), rgba(64,201,255,.10));
+    }
+    .status-card.green {
+        border-left-color: var(--green);
+    }
+    .status-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+        text-transform: uppercase;
+        letter-spacing: 0;
+        margin-bottom: 6px;
+    }
+    .status-title {
+        color: var(--ink);
+        font-size: 26px;
+        line-height: 1.18;
+        font-weight: 820;
+    }
+    .status-detail {
+        color: #cfe0f2;
+        font-size: 14px;
+        margin-top: 6px;
+    }
     .metric-label {
         color: var(--muted);
         font-size: 13px;
@@ -327,6 +362,20 @@ def metric_card(label: str, value: str, note: str, tone: str = "blue") -> None:
     )
 
 
+def market_status(context: str, buy_count: int) -> tuple[str, str, str]:
+    if buy_count > 0 or "risk-on" in context.lower():
+        return (
+            "Stocks to watch today",
+            "Some names passed the screen, but still confirm price and volume before trading.",
+            "green",
+        )
+    return (
+        "No strong buy setups yet",
+        "The screen is cautious right now, so waiting may be better than forcing a trade.",
+        "amber",
+    )
+
+
 def color_action(value: str) -> str:
     if value == "BUY WATCH":
         return "background-color: #22f2a6; color: #031812; font-weight: 900;"
@@ -393,7 +442,17 @@ positive_count = sum(
     if item.get("change_percent") is not None and not pd.isna(item.get("change_percent")) and item.get("change_percent") > 0
 )
 
-st.subheader(report["market_context"])
+status_title, status_detail, status_tone = market_status(report.get("market_context", ""), buy_count)
+st.markdown(
+    f"""
+    <div class="status-card {html.escape(status_tone)}">
+        <div class="status-label">Market Status</div>
+        <div class="status-title">Today's Signal: {html.escape(status_title)}</div>
+        <div class="status-detail">{html.escape(status_detail)}</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 st.caption(f"As of {report['as_of']}")
 
 summary_cols = st.columns(4)
@@ -489,7 +548,6 @@ with tab_all_stocks:
             "dividend_yield",
             "year_change",
             "listed_in",
-            "non_compliant",
         ]
         visible_columns = [column for column in display_columns if column in frame.columns]
         styled_frame = frame[visible_columns].style
