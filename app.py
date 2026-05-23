@@ -457,7 +457,7 @@ st.caption(f"As of {report['as_of']}")
 
 summary_cols = st.columns(4)
 with summary_cols[0]:
-    metric_card("Watched stocks", str(len(quotes)), "Fast 20-symbol universe", "blue")
+    metric_card("Watched stocks", str(len(quotes)), f"Fast {len(quotes)}-symbol universe", "blue")
 with summary_cols[1]:
     metric_card("Buy watch", str(buy_count), "Ideas needing broker confirmation", "green")
 with summary_cols[2]:
